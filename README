@@ -1,0 +1,122 @@
+Jambase4J
+=========
+
+Jambase4J is a Java wrapper around the JamBase live music search API.
+(http://developer.jambase.com/docs)
+
+This library can be used to create mashups where your users might want to search for live music.
+
+**Note: JamBase requires that any site making use of it's API provide attribution.
+See http://developer.jambase.com/docs for more information. This gem provides 
+helpers to make adding attribution to your site easy.
+
+Configuration
+=============
+
+Jambase4J can be configured several ways:
+
+1) Use the default configuration
+	eg: API.configure();
+	This assumes that you have a file called jambase4j.config in your application root that contains the line:
+	jambase4j-api-key=Your JamBase API key.
+	
+2) Pass in a new instance of DefaultConfigurator
+	DefaultConfigurator has several constructors:
+		a) new DefaultConfigurator() - assumes the same defaults as calling API.configure();
+		a) new DefaultConfigurator(String fileName) - allows you to pass in a different config file.
+   			eg: API.configure(new DefaultConfigurator("myspecialconfig.txt"));
+
+3) Pass in an anonymous class that implements the APIConfigurator interface. It must implement a method called
+	configure, that takes an instance of the API object. You must call setAPIKey(). Optionally, you can call setWebConnection()
+	and pass in an instance of a class that implements WebConnection if you've got an alternate means of calling the web API.
+	eg:
+	
+		API.configure(new APIConfigurator() {
+
+				public void configure(Jambase4JAPI arg0)
+						throws MalformedConfigException, FileNotFoundException,
+						IOException
+				{
+					arg0.setAPIKey("Your JamBase API key");
+				}
+			});
+			
+		API.configure(new APIConfigurator() {
+
+				public void configure(Jambase4JAPI arg0)
+						throws MalformedConfigException, FileNotFoundException,
+						IOException
+				{
+					arg0.setAPIKey("Your JamBase API key");
+					arg0.setWebConnection(new DefaultWebConnection()); //optional
+				}
+			});
+			
+** Not configuring the API object will cause exceptions to be thrown when attempting to use it.
+
+Functionality
+=============
+
+The Jambase4J API object exposes several methods:
+
+1) searchByArtist(String artistName, Dictionary<String, String> optionalArgs)
+2) searchByUser(String userName, Dictionary<String, String> optionalArgs)
+3) searchByZipcode(String zip, Dictionary<String, String> optionalArgs)
+4) search(Dictionary<String, String> args)
+
+Valid dictionary keys are:
+
+1) band/artist
+2) user - the JamBase use to use to limit the result set
+3) zip
+4) radius - the distance from the specified zip code to search
+
+Complete Example
+================
+
+		try
+		{
+			API.configure(new APIConfigurator() {
+
+				public void configure(Jambase4JAPI api)
+						throws MalformedConfigException, FileNotFoundException,
+						IOException
+				{
+					api.setAPIKey("fsz2pg4zuzmpj9c2xd9335dt");
+				}
+			});
+			Dictionary<String, String> args = new Hashtable<String, String>();
+			args.put("artist", "The Disco Biscuits");
+			List<Event> events = API.getInstance().search(args);
+			for(Event e : events)
+			{
+				System.out.println(getVenueString(e.getVenue()));
+				System.out.println(e.getDate());
+				for(Artist a : e.getArtists())
+				{
+					System.out.println(a.getName());
+				}
+				
+				System.out.println();
+			}
+		} 
+		catch (FileNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		catch (MalformedConfigException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		catch (APINotConfiguredException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}

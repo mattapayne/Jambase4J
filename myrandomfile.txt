@@ -1,0 +1,1 @@
+jambase4j-api-key=This is the key from the custom file
