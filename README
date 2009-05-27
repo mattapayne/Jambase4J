@@ -59,17 +59,10 @@ Functionality
 
 The Jambase4J API object exposes several methods:
 
-1) searchByArtist(String artistName, Dictionary<String, String> optionalArgs)
-2) searchByUser(String userName, Dictionary<String, String> optionalArgs)
-3) searchByZipcode(String zip, Dictionary<String, String> optionalArgs)
-4) search(Dictionary<String, String> args)
-
-Valid dictionary keys are:
-
-1) band/artist
-2) user - the JamBase use to use to limit the result set
-3) zip
-4) radius - the distance from the specified zip code to search
+1) searchByBand(String bandName, SearchParams optionalArgs)
+2) searchByUser(String userName, SearchParams optionalArgs)
+3) searchByZipcode(String zip, SearchParams optionalArgs)
+4) search(SearchParams args)
 
 Complete Example
 ================
