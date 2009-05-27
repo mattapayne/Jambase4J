@@ -19,12 +19,12 @@ public class API implements Jambase4JAPI
 {
 	private static final Jambase4JAPI instance = new API();
 	private static final String API_URL = "http://api.jambase.com/search";
-	private static String jambaseAPIKey = null;
-	private static WebConnection connection = null;
+	private String jambaseAPIKey = null;
+	private WebConnection connection = null;
 	
 	public static Jambase4JAPI getInstance() throws APINotConfiguredException
 	{
-		ensureConfigured();
+		ensureConfigured(instance);
 		return instance;
 	}
 	
@@ -63,9 +63,9 @@ public class API implements Jambase4JAPI
 		this.connection = connection;
 	}
 	
-	private static void ensureConfigured() throws APINotConfiguredException
+	private static void ensureConfigured(Jambase4JAPI api) throws APINotConfiguredException
 	{
-		if(jambaseAPIKey == null || jambaseAPIKey.trim().length() == 0)
+		if(api.getAPIKey() == null || api.getAPIKey().trim().length() == 0)
 		{
 			throw new APINotConfiguredException("The API key is not set");
 		}
@@ -92,16 +92,16 @@ public class API implements Jambase4JAPI
 		String tmp = sb.toString();
 		return tmp + "apikey=" + jambaseAPIKey;
 	}
-	
-	private List<Event> innerSearch(Dictionary<String, String> args)
+
+	public List<Event> search(SearchParams args)
 	{
 		List<Event> events = new ArrayList<Event>();
-		if(args == null || args.size() == 0)
+		if(args == null || args.isEmpty())
 		{
 			return events;
 		}
 		
-		String queryString = constructQueryString(args);
+		String queryString = constructQueryString(args.toArgs());
 		String completeUrl = API_URL + "?" + queryString;
 		String xml = getWebConnection().getResponse(completeUrl);
 		EventBuilder builder = new EventBuilderImpl();
@@ -110,38 +110,33 @@ public class API implements Jambase4JAPI
 		return events;
 	}
 
-	public List<Event> search(SearchParams args)
-	{
-		return innerSearch(args.toArgs());
-	}
-
 	public List<Event> searchByBand(String band, SearchParams additionalArgs)
 	{
-		return innerSearch(additionalArgs.byBand(band).toArgs());
+		return search(additionalArgs.byBand(band));
 	}
 
 	public List<Event> searchByBand(String band)
 	{
-		return innerSearch(new SearchParamsImpl().byBand(band).toArgs());
+		return search(new SearchParamsImpl().byBand(band));
 	}
 
 	public List<Event> searchByUser(String user, SearchParams additionalArgs)
 	{
-		return innerSearch(additionalArgs.byUser(user).toArgs());
+		return search(additionalArgs.byUser(user));
 	}
 
 	public List<Event> searchByUser(String user)
 	{
-		return innerSearch(new SearchParamsImpl().byUser(user).toArgs());
+		return search(new SearchParamsImpl().byUser(user));
 	}
 
 	public List<Event> searchByZipcode(String zip, SearchParams additionalArgs)
 	{
-		return innerSearch(additionalArgs.byZipcode(zip).toArgs());
+		return search(additionalArgs.byZipcode(zip));
 	}
 
 	public List<Event> searchByZipcode(String zip)
 	{
-		return innerSearch(new SearchParamsImpl().byZipcode(zip).toArgs());
+		return search(new SearchParamsImpl().byZipcode(zip));
 	}
 }

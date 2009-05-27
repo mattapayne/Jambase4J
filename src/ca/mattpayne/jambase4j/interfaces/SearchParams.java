@@ -9,4 +9,5 @@ public interface SearchParams
 	public SearchParams byZipcode(String zipCode);
 	public SearchParams byRadius(String radius);
 	public Dictionary<String, String> toArgs();
+	public boolean isEmpty();
 }

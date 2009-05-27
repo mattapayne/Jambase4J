@@ -2,15 +2,9 @@ package ca.mattpayne.jambase4j.test;
 
 import static org.junit.Assert.*;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.List;
-
-import org.hamcrest.Description;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.jmock.api.Expectation;
-import org.jmock.api.Invocation;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +14,6 @@ import ca.mattpayne.jambase4j.DefaultWebConnection;
 import ca.mattpayne.jambase4j.SearchParamsImpl;
 import ca.mattpayne.jambase4j.interfaces.APIConfigurator;
 import ca.mattpayne.jambase4j.interfaces.Event;
-import ca.mattpayne.jambase4j.interfaces.SearchParams;
 import ca.mattpayne.jambase4j.interfaces.WebConnection;
 import ca.mattpayne.jambase4j.APINotConfiguredException;
 import ca.mattpayne.jambase4j.interfaces.Jambase4JAPI;
@@ -77,12 +70,13 @@ public class APITest
 	}
 	
 	@Test
-	public void itShouldReturnNullFromSearchIfNullSearchParamsGiven()
+	public void itShouldReturnEmptyListFromSearchIfNullSearchParamsGiven()
 	{
 		try
 		{
 			API.configure();
-			assertNull(API.getInstance().search(null));
+			List<Event> events = API.getInstance().search(null);
+			assertTrue(events.isEmpty());
 		}
 		catch(Exception e)
 		{

@@ -39,6 +39,11 @@ public class SearchParamsImpl implements SearchParams
 		this.zipCode = zipCode;
 		return this;
 	}
+	
+	public boolean isEmpty()
+	{
+		return toArgs().isEmpty();
+	}
 
 	public Dictionary<String, String> toArgs()
 	{
