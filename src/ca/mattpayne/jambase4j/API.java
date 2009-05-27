@@ -4,15 +4,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.List;
 import ca.mattpayne.jambase4j.interfaces.APIConfigurator;
 import ca.mattpayne.jambase4j.interfaces.Event;
 import ca.mattpayne.jambase4j.interfaces.EventBuilder;
 import ca.mattpayne.jambase4j.interfaces.Jambase4JAPI;
-import ca.mattpayne.jambase4j.interfaces.ParamCleanser;
+import ca.mattpayne.jambase4j.interfaces.SearchParams;
 import ca.mattpayne.jambase4j.interfaces.WebConnection;
 
 public class API implements Jambase4JAPI
@@ -21,15 +21,6 @@ public class API implements Jambase4JAPI
 	private static final String API_URL = "http://api.jambase.com/search";
 	private static String jambaseAPIKey = null;
 	private static WebConnection connection = null;
-	private static ParamCleanser paramCleanser = null;
-	public static final String[] JAMBASE_PARAMS = {"zip", "band", "radius", "user", "artist"};
-	public static final Dictionary<String, String> ALIASES = new Hashtable<String, String>();
-	
-	static
-	{
-		ALIASES.put("artist", "band");
-		paramCleanser = new ParamCleanserImpl(JAMBASE_PARAMS, ALIASES);
-	}
 	
 	public static Jambase4JAPI getInstance() throws APINotConfiguredException
 	{
@@ -45,50 +36,6 @@ public class API implements Jambase4JAPI
 	public static void configure() throws MalformedConfigException, FileNotFoundException, IOException
 	{
 		configure(new DefaultConfigurator());
-	}
-
-	public List<Event> search(Dictionary<String, String> args)
-	{
-		if(args == null)
-		{
-			return null;
-		}
-		
-		args = paramCleanser.cleanse(args);
-		
-		if(args.size() == 0)
-		{
-			return null;
-		}
-		
-		String queryString = constructQueryString(args);
-		String completeUrl = API_URL + "?" + queryString;
-		String xml = getWebConnection().getResponse(completeUrl);
-		EventBuilder builder = new EventBuilderImpl();
-		return builder.build(xml);
-	}
-
-	public List<Event> searchByArtist(String artist,
-			Dictionary<String, String> args)
-	{
-		args.put("band", artist);
-		if(keyExists(args, "artist"))
-		{
-			args.remove("artist");
-		}
-		return search(args);
-	}
-
-	public List<Event> searchByUser(String user, Dictionary<String, String> args)
-	{
-		args.put("user", user);
-		return search(args);
-	}
-
-	public List<Event> searchByZipcode(String zip, Dictionary<String, String> args)
-	{
-		args.put("zip", zip);
-		return search(args);
 	}
 
 	public String getAPIKey()
@@ -124,12 +71,6 @@ public class API implements Jambase4JAPI
 		}
 	}
 	
-	private boolean keyExists(Dictionary<String, String> args, String key)
-	{
-		Hashtable<String, String> tmp = (Hashtable<String, String>)args;
-		return tmp.containsKey(key);
-	}
-	
 	private String constructQueryString(Dictionary<String, String> args)
 	{
 		StringBuffer sb = new StringBuffer(); 
@@ -150,5 +91,57 @@ public class API implements Jambase4JAPI
 		}
 		String tmp = sb.toString();
 		return tmp + "apikey=" + jambaseAPIKey;
+	}
+	
+	private List<Event> innerSearch(Dictionary<String, String> args)
+	{
+		List<Event> events = new ArrayList<Event>();
+		if(args == null || args.size() == 0)
+		{
+			return events;
+		}
+		
+		String queryString = constructQueryString(args);
+		String completeUrl = API_URL + "?" + queryString;
+		String xml = getWebConnection().getResponse(completeUrl);
+		EventBuilder builder = new EventBuilderImpl();
+		events = builder.build(xml);
+		
+		return events;
+	}
+
+	public List<Event> search(SearchParams args)
+	{
+		return innerSearch(args.toArgs());
+	}
+
+	public List<Event> searchByBand(String band, SearchParams additionalArgs)
+	{
+		return innerSearch(additionalArgs.byBand(band).toArgs());
+	}
+
+	public List<Event> searchByBand(String band)
+	{
+		return innerSearch(new SearchParamsImpl().byBand(band).toArgs());
+	}
+
+	public List<Event> searchByUser(String user, SearchParams additionalArgs)
+	{
+		return innerSearch(additionalArgs.byUser(user).toArgs());
+	}
+
+	public List<Event> searchByUser(String user)
+	{
+		return innerSearch(new SearchParamsImpl().byUser(user).toArgs());
+	}
+
+	public List<Event> searchByZipcode(String zip, SearchParams additionalArgs)
+	{
+		return innerSearch(additionalArgs.byZipcode(zip).toArgs());
+	}
+
+	public List<Event> searchByZipcode(String zip)
+	{
+		return innerSearch(new SearchParamsImpl().byZipcode(zip).toArgs());
 	}
 }

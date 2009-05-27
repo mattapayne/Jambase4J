@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.hamcrest.Description;
 import org.jmock.Expectations;
@@ -16,7 +17,10 @@ import org.junit.Test;
 import ca.mattpayne.jambase4j.API;
 import ca.mattpayne.jambase4j.DefaultConfigurator;
 import ca.mattpayne.jambase4j.DefaultWebConnection;
+import ca.mattpayne.jambase4j.SearchParamsImpl;
 import ca.mattpayne.jambase4j.interfaces.APIConfigurator;
+import ca.mattpayne.jambase4j.interfaces.Event;
+import ca.mattpayne.jambase4j.interfaces.SearchParams;
 import ca.mattpayne.jambase4j.interfaces.WebConnection;
 import ca.mattpayne.jambase4j.APINotConfiguredException;
 import ca.mattpayne.jambase4j.interfaces.Jambase4JAPI;
@@ -58,13 +62,13 @@ public class APITest
 	}
 	
 	@Test
-	public void itShouldReturnNullFromSearchIfNoSearchParamsGiven()
+	public void itShouldReturnAnEmptyListFromSearchIfNoSearchParamsGiven()
 	{
 		try
 		{
-			Dictionary<String, String> args = new Hashtable<String, String>();
 			API.configure();
-			assertNull(API.getInstance().search(args));
+			List<Event> events = API.getInstance().search(new SearchParamsImpl());
+			assertEquals(0, events.size());
 		}
 		catch(Exception e)
 		{
@@ -97,7 +101,7 @@ public class APITest
 			mockery.checking(new Expectations() {{
 				oneOf(cnn).getResponse("http://api.jambase.com/search?band=The+Dead&apikey=This is the key");
 			}});
-			API.getInstance().searchByArtist("The Dead", new Hashtable<String, String>());
+			API.getInstance().searchByBand("The Dead");
 			mockery.assertIsSatisfied();
 		} 
 		catch (Exception e)
@@ -119,7 +123,7 @@ public class APITest
 			mockery.checking(new Expectations() {{
 				oneOf(cnn).getResponse("http://api.jambase.com/search?zip=90210&apikey=This is the key");
 			}});
-			API.getInstance().searchByZipcode("90210", new Hashtable<String, String>());
+			API.getInstance().searchByZipcode("90210");
 			mockery.assertIsSatisfied();
 		} 
 		catch (Exception e)
@@ -141,10 +145,7 @@ public class APITest
 			mockery.checking(new Expectations() {{
 				oneOf(cnn).getResponse("http://api.jambase.com/search?user=test&zip=90210&apikey=This is the key");
 			}});
-			Dictionary<String, String> args = new Hashtable<String, String>();
-			args.put("zip", "90210");
-			args.put("user", "test");
-			API.getInstance().search(args);
+			API.getInstance().search(new SearchParamsImpl().byZipcode("90210").byUser("test"));
 			mockery.assertIsSatisfied();
 		} 
 		catch (Exception e)
@@ -166,7 +167,7 @@ public class APITest
 			mockery.checking(new Expectations() {{
 				oneOf(cnn).getResponse("http://api.jambase.com/search?user=test&apikey=This is the key");
 			}});
-			API.getInstance().searchByUser("test", new Hashtable<String, String>());
+			API.getInstance().searchByUser("test");
 			mockery.assertIsSatisfied();
 		} 
 		catch (Exception e)
